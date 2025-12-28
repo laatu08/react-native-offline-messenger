@@ -1,50 +1,84 @@
-# Welcome to your Expo app 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+# 📱 Expense Tracker (Offline-First Android App)
 
-## Get started
+An **offline-first expense tracking mobile application** built using **Expo + React Native**, designed to help users track income and expenses, manage categories, and visualize spending patterns through charts — all without requiring an internet connection.
 
-1. Install dependencies
+This app is fully functional as a **standalone Android APK** and is optimized for real-world usage.
 
-   ```bash
-   npm install
-   ```
+---
 
-2. Start the app
+## 🚀 Features
 
-   ```bash
-   npx expo start
-   ```
+### ✅ Core Functionality
+- Add **income and expense** transactions
+- Fully **offline data storage**
+- Persistent data even after app restart
+- Edit existing transactions
+- Delete transactions with confirmation
 
-In the output, you'll find options to open the app in a
+### 🗂️ Category Management
+- Separate categories for **Income** and **Expense**
+- Add new custom categories
+- Delete categories safely
+- Categories dynamically update across the app
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### 📊 Analytics & Visualizations
+- **Weekly / Monthly / Yearly** filters
+- Expense by category (Pie Chart)
+- Income by category (Pie Chart)
+- Income vs Expense comparison (Bar Chart)
+- Spending / Income trend over time (Line Chart)
+- Toggle between **Expense / Income** trends
+- Dynamic color-coded charts
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 🎨 User Experience
+- Clean, modern UI
+- Welcome screen with date context
+- Empty-state UX
+- Long-press gestures for deletion
+- Adaptive Android app icon
+- Immersive full-screen experience
+- Auto-hiding Android navigation bar
 
-## Get a fresh project
+### 📦 Deployment Ready
+- Packaged as **Android APK** using Expo EAS
+- No Expo Go required for end users
+- Ready for Play Store submission
 
-When you're ready, run:
+---
+
+## 🧱 Tech Stack
+
+- **React Native**
+- **Expo**
+- **Expo Router**
+- **AsyncStorage**
+- **react-native-chart-kit**
+- **react-native-svg**
+- **Expo EAS Build**
+
+---
+
+## ▶️ Running the App
 
 ```bash
-npm run reset-project
+npm install
+expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## 📦 Build APK
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm install -g eas-cli
+expo login
+eas init
+eas build -p android --profile preview
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+---
 
-## Join the community
+## 📜 License
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+MIT License

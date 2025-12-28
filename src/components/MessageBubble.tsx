@@ -1,13 +1,19 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useEffect, useState } from "react";
 import { Message, MessageStatus } from "../types/message";
+import { Pressable, Alert } from "react-native";
 
 interface Props {
   message: Message;
   onManualRetry: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-export default function MessageBubble({ message, onManualRetry }: Props) {
+export default function MessageBubble({
+  message,
+  onManualRetry,
+  onDelete,
+}: Props) {
   const [, forceUpdate] = useState(0);
 
   // Force re-render for countdown (safe + localized)
@@ -57,13 +63,30 @@ export default function MessageBubble({ message, onManualRetry }: Props) {
     }
   }
 
+  function confirmDelete() {
+    Alert.alert(
+      "Delete message?",
+      "This message will be permanently removed.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => onDelete(message.id),
+        },
+      ]
+    );
+  }
+
   return (
-    <View style={styles.wrapper}>
-      <View style={styles.bubble}>
-        <Text style={styles.text}>{message.text}</Text>
+    <Pressable onLongPress={confirmDelete}>
+      <View style={styles.wrapper}>
+        <View style={styles.bubble}>
+          <Text style={styles.text}>{message.text}</Text>
+        </View>
+        {renderStatus()}
       </View>
-      {renderStatus()}
-    </View>
+    </Pressable>
   );
 }
 

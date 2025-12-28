@@ -18,6 +18,7 @@ import {
 import { processQueue } from "../../src/sync/processQueue";
 import useNetwork from "../../src/hooks/useNetwork";
 import MessageBubble from "../../src/components/MessageBubble";
+import { deleteMessage } from "../../src/storage/messageQueue";
 
 export default function ChatScreen() {
   const [input, setInput] = useState("");
@@ -59,7 +60,8 @@ export default function ChatScreen() {
   }
 
   function renderItem({ item }: { item: Message }) {
-    return <MessageBubble message={item} onManualRetry={handleManualRetry} />;
+    return <MessageBubble message={item} onManualRetry={handleManualRetry} onDelete={handleDelete}
+ />;
   }
 
   useEffect(() => {
@@ -83,6 +85,11 @@ export default function ChatScreen() {
     await processQueue();
 
     // 4️⃣ Reload UI again after attempt
+    await loadMessages();
+  }
+
+  async function handleDelete(id: string) {
+    await deleteMessage(id);
     await loadMessages();
   }
 

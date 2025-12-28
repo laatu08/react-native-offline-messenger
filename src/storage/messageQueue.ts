@@ -131,3 +131,9 @@ export async function requestManualRetry(id: string): Promise<void> {
 
   await saveQueue(updatedQueue);
 }
+
+export async function deleteMessage(id: string): Promise<void> {
+  const queue = await getQueue();
+  const updatedQueue = queue.filter((msg) => msg.id !== id);
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedQueue));
+}

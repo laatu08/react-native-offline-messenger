@@ -8,7 +8,7 @@ import { Message } from "../types/message";
 export async function sendMessageToServer(message: Message): Promise<void> {
   return new Promise((resolve, reject) => {
     const NETWORK_DELAY_MS = 800;
-    const FAILURE_RATE = 0.5; // 30% failure rate
+    const FAILURE_RATE = 0.9; // 30% failure rate
 
     setTimeout(() => {
       const didFail = Math.random() < FAILURE_RATE;

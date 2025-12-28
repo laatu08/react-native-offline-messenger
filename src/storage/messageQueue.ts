@@ -74,6 +74,7 @@ export async function updateAfterAttempt(
       retryCount,
       lastTriedAt,
       nextRetryAt: lastTriedAt + delay,
+      manualRetryRequested: false,
     };
   });
 
@@ -84,15 +85,39 @@ export async function getRetryableMessages(): Promise<Message[]> {
   const queue = await getQueue();
   const now = Date.now();
 
-  return queue.filter(
-    (msg) =>
-      msg.status !== MessageStatus.SENT &&
-      msg.retryCount < MAX_RETRIES &&
-      (!msg.nextRetryAt || msg.nextRetryAt <= now)
-  );
+  return queue.filter((msg) => {
+    if (msg.status === MessageStatus.SENT) return false;
+    // Allow ONE retry if user explicitly requested it
+    if (msg.manualRetryRequested) return true;
+
+    // Otherwise enforce retry limit
+    if (msg.retryCount >= MAX_RETRIES) return false;
+
+    // Automatic retry respects backoff
+    if (!msg.nextRetryAt) return true;
+    return msg.nextRetryAt <= now;
+  });
 }
 
 function getBackoffDelayMs(retryCount: number): number {
   // 2^retryCount seconds
   return Math.pow(2, retryCount) * 1000;
+}
+
+export async function requestManualRetry(id: string): Promise<void> {
+  const queue = await getQueue();
+
+  const updatedQueue = queue.map((msg) => {
+    if (msg.id !== id) return msg;
+    if (msg.status === MessageStatus.SENT) return msg;
+
+    return {
+      ...msg,
+      status: MessageStatus.PENDING,
+      manualRetryRequested: true,
+      nextRetryAt: undefined, // ignore backoff
+    };
+  });
+
+  await saveQueue(updatedQueue);
 }

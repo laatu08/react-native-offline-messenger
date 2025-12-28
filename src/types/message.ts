@@ -13,6 +13,7 @@ export interface Message {
   lastTriedAt?: number; // last send attempt (undefined if never tried)
   retryCount: number; // number of send attempts
   nextRetryAt?: number; // timestamp when next retry is allowed
+  manualRetryRequested?: boolean;
 }
 
 // Stored queue type (FIFO)

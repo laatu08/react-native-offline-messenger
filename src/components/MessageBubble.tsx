@@ -2,12 +2,15 @@ import { View, Text, StyleSheet } from "react-native";
 import { Message, MessageStatus } from "../types/message";
 import { MAX_RETRIES } from "../storage/messageQueue";
 import { useEffect, useState } from "react";
+import { TouchableOpacity } from "react-native";
+import { requestManualRetry } from "../storage/messageQueue";
 
 interface Props {
   message: Message;
+  onManualRetry: (id: string) => void;
 }
 
-export default function MessageBubble({ message }: Props) {
+export default function MessageBubble({ message, onManualRetry }: Props) {
   const [, forceUpdate] = useState(0);
 
   useEffect(() => {
@@ -21,24 +24,28 @@ export default function MessageBubble({ message }: Props) {
   function renderStatus() {
     switch (message.status) {
       case MessageStatus.SENT:
-        return "✅ Sent";
+        return <Text style={styles.status}>✅ Sent</Text>;
 
       case MessageStatus.PENDING:
         if (message.retryCount > 0 && message.nextRetryAt) {
-          return `🔁 Retrying in ${secondsLeft(message.nextRetryAt)}s… (${
-            message.retryCount
-          }/5)`;
+          return (
+            <Text style={styles.status}>
+              🔁 Retrying in {secondsLeft(message.nextRetryAt)}s… (
+              {message.retryCount}/5)
+            </Text>
+          );
         }
-        return "⏳ Pending";
+        return <Text style={styles.status}>⏳ Pending</Text>;
 
       case MessageStatus.FAILED:
-        if (message.retryCount >= MAX_RETRIES) {
-          return "❌ Failed (max retries)";
-        }
-        return `🔁 Retry ${message.retryCount}/${MAX_RETRIES}`;
+        return (
+          <TouchableOpacity onPress={() => onManualRetry(message.id)}>
+            <Text style={styles.retry}>❌ Failed — Tap to retry</Text>
+          </TouchableOpacity>
+        );
 
       default:
-        return "";
+        return null;
     }
   }
 
@@ -51,7 +58,7 @@ export default function MessageBubble({ message }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>{message.text}</Text>
-      <Text style={styles.status}>{renderStatus()}</Text>
+      {renderStatus()}
     </View>
   );
 }
@@ -70,5 +77,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     color: "#555",
+  },
+  retry: {
+    color: "red",
+    fontSize: 12,
+    marginTop: 4,
   },
 });

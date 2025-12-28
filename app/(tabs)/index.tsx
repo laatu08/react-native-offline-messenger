@@ -9,7 +9,11 @@ import {
 } from "react-native";
 
 import { Message, MessageStatus } from "../../src/types/message";
-import { enqueueMessage, getQueue } from "../../src/storage/messageQueue";
+import {
+  enqueueMessage,
+  getQueue,
+  requestManualRetry,
+} from "../../src/storage/messageQueue";
 import { processQueue } from "../../src/sync/processQueue";
 import useNetwork from "../../src/hooks/useNetwork";
 import MessageBubble from "../../src/components/MessageBubble";
@@ -54,7 +58,7 @@ export default function ChatScreen() {
   }
 
   function renderItem({ item }: { item: Message }) {
-    return <MessageBubble message={item} />;
+    return <MessageBubble message={item} onManualRetry={handleManualRetry} />;
   }
 
   useEffect(() => {
@@ -66,6 +70,20 @@ export default function ChatScreen() {
 
     return () => clearInterval(interval);
   }, [isOnline]);
+
+  async function handleManualRetry(id: string) {
+    // 1️⃣ Update storage
+    await requestManualRetry(id);
+
+    // 2️⃣ IMMEDIATELY reload UI state (this was missing)
+    await loadMessages();
+
+    // 3️⃣ THEN attempt network retry
+    await processQueue();
+
+    // 4️⃣ Reload UI again after attempt
+    await loadMessages();
+  }
 
   return (
     <View style={styles.container}>

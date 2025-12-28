@@ -1,98 +1,131 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  FlatList,
+  StyleSheet,
+} from "react-native";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { Message, MessageStatus } from "../../src/types/message";
+import { enqueueMessage, getQueue } from "../../src/storage/messageQueue";
+import { processQueue } from "../../src/sync/processQueue";
+import useNetwork from "../../src/hooks/useNetwork";
+import MessageBubble from "../../src/components/MessageBubble";
 
-export default function HomeScreen() {
+export default function ChatScreen() {
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const { isOnline } = useNetwork();
+
+  // Load messages on app start
+  useEffect(() => {
+    loadMessages();
+  }, []);
+
+  // Auto-sync when network comes back
+  useEffect(() => {
+    if (isOnline) {
+      syncMessages();
+    }
+  }, [isOnline]);
+
+  async function loadMessages() {
+    const queue = await getQueue();
+    setMessages(queue);
+  }
+
+  async function syncMessages() {
+    await processQueue();
+    await loadMessages();
+  }
+
+  async function handleSend() {
+    if (!input.trim()) return;
+
+    await enqueueMessage(input.trim());
+    setInput("");
+    await loadMessages();
+
+    if (isOnline) {
+      await syncMessages();
+    }
+  }
+
+  function renderItem({ item }: { item: Message }) {
+    return <MessageBubble message={item} />;
+  }
+
+  useEffect(() => {
+    if (!isOnline) return;
+
+    const interval = setInterval(async () => {
+      await syncMessages();
+    }, 4000); // retry every 4 seconds while online
+
+    return () => clearInterval(interval);
+  }, [isOnline]);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={styles.container}>
+      <Text style={styles.header}>
+        Offline Messenger ({isOnline ? "Online" : "Offline"})
+      </Text>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <FlatList
+        data={messages}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+      />
+
+      <View style={styles.inputRow}>
+        <TextInput
+          value={input}
+          onChangeText={setInput}
+          placeholder="Type a message"
+          style={styles.input}
+        />
+        <Button title="Send" onPress={handleSend} />
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "white",
   },
-  stepContainer: {
-    gap: 8,
+  header: {
+    fontSize: 16,
+    fontWeight: "600",
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  message: {
+    padding: 10,
+    marginVertical: 4,
+    backgroundColor: "#eee",
+    borderRadius: 6,
+  },
+  text: {
+    fontSize: 14,
+  },
+  status: {
+    fontSize: 12,
+    color: "gray",
+    marginTop: 2,
+  },
+  inputRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 8,
+  },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    padding: 8,
+    borderRadius: 4,
   },
 });

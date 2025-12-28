@@ -3,9 +3,10 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   FlatList,
   StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 
 import { Message, MessageStatus } from "../../src/types/message";
@@ -86,64 +87,115 @@ export default function ChatScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>
-        Offline Messenger ({isOnline ? "Online" : "Offline"})
-      </Text>
-
-      <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-      />
-
-      <View style={styles.inputRow}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+    >
+      {" "}
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Offline Messenger</Text>
+        <View
+          style={[
+            styles.statusBadge,
+            { backgroundColor: isOnline ? "#d1fae5" : "#fee2e2" },
+          ]}
+        >
+          <Text
+            style={[
+              styles.statusText,
+              { color: isOnline ? "#065f46" : "#991b1b" },
+            ]}
+          >
+            {isOnline ? "Online" : "Offline"}
+          </Text>
+        </View>
+      </View>
+      {/* Messages */}
+      <View style={{ flex: 1 }}>
+        <FlatList
+          data={[...messages].sort((a, b) => a.createdAt - b.createdAt)}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.list}
+          keyboardShouldPersistTaps="handled"
+        />
+      </View>
+      {/* Input */}
+      <View style={styles.inputBar}>
         <TextInput
           value={input}
           onChangeText={setInput}
-          placeholder="Type a message"
+          placeholder="Type a message…"
+          placeholderTextColor="#9ca3af"
           style={styles.input}
         />
-        <Button title="Send" onPress={handleSend} />
+        <Text style={styles.sendButton} onPress={handleSend}>
+          Send
+        </Text>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "white",
+    backgroundColor: "#f9fafb",
+    paddingTop: 20,
   },
+
+  /* Header */
   header: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  message: {
-    padding: 10,
-    marginVertical: 4,
-    backgroundColor: "#eee",
-    borderRadius: 6,
-  },
-  text: {
-    fontSize: 14,
-  },
-  status: {
-    fontSize: 12,
-    color: "gray",
-    marginTop: 2,
-  },
-  inputRow: {
+    padding: 16,
     flexDirection: "row",
-    gap: 8,
-    marginTop: 8,
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "white",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e7eb",
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
+  /* Message list */
+  list: {
+    padding: 12,
+  },
+
+  /* Input bar */
+  inputBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    backgroundColor: "white",
+    borderTopWidth: 1,
+    borderTopColor: "#e5e7eb",
   },
   input: {
     flex: 1,
-    borderWidth: 1,
-    padding: 8,
-    borderRadius: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: "#f3f4f6",
+    fontSize: 14,
+  },
+  sendButton: {
+    marginLeft: 12,
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2563eb",
   },
 });

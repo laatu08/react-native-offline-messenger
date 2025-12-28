@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "offline-messenger",
+    "name": "Offenger",
     "slug": "offline-messenger",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/icon1.png",
     "scheme": "offlinemessenger",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,12 +14,13 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/icon1.png",
+        "backgroundImage": "./assets/images/icon1.png",
+        "monochromeImage": "./assets/images/icon1.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.dreaming.coder.offlinemessenger"
     },
     "web": {
       "output": "static",
@@ -43,6 +44,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8285ca33-2555-4512-ba3a-1e3f9c1b83c4"
+      }
+    },
+    "owner": "dreaming.coder"
   }
 }

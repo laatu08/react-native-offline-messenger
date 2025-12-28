@@ -51,6 +51,7 @@ export async function updateAfterAttempt(
         retryCount,
         lastTriedAt,
         nextRetryAt: undefined,
+        manualRetryRequested: false,
       };
     }
 
@@ -62,6 +63,7 @@ export async function updateAfterAttempt(
         retryCount,
         lastTriedAt,
         nextRetryAt: undefined,
+        manualRetryRequested: false,
       };
     }
 
@@ -86,16 +88,24 @@ export async function getRetryableMessages(): Promise<Message[]> {
   const now = Date.now();
 
   return queue.filter((msg) => {
+    // Sent messages are done
     if (msg.status === MessageStatus.SENT) return false;
-    // Allow ONE retry if user explicitly requested it
+
+    // ❌ FAILED messages are NOT auto-retried
+    // They retry ONLY if user explicitly requests
+    if (msg.status === MessageStatus.FAILED) {
+      return msg.manualRetryRequested === true;
+    }
+
+    // Manual retry bypasses backoff ONCE
     if (msg.manualRetryRequested) return true;
 
-    // Otherwise enforce retry limit
+    // Enforce retry limit
     if (msg.retryCount >= MAX_RETRIES) return false;
 
     // Automatic retry respects backoff
     if (!msg.nextRetryAt) return true;
-    return msg.nextRetryAt <= now;
+    return msg.nextRetryAt <= Date.now();
   });
 }
 
